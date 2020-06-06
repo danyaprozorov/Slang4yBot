@@ -10,7 +10,6 @@ class user:
         self.id = id
 
 
-
 @bot.message_handler(commands=['start'])
 def start(message):
     Nikita.id = f'{message.from_user.id}'
@@ -27,6 +26,18 @@ def get_text(message):
     if message.text == 'Hello':
         bot.send_message(message.chat.id, f'Отлично! рад видеть тебя, {message.from_user.first_name}')
         bot.send_message(message.chat.id, 'Снизу меню, с чего начнем?')
+        main_menu(message)
+
+
+def main_menu(message):
+    markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item_progress = types.KeyboardButton('Мой прогресс')
+    item_choice = types.KeyboardButton('Выбор слов')
+    item_learn = types.KeyboardButton('Учить слова')
+    item_topic = types.KeyboardButton('Выбор топика')
+    markup_reply.add(item_progress, item_choice, item_learn, item_topic)
+    bot.send_message(message.chat.id, 'Жми на кнопку)', reply_markup=markup_reply)
+
 
 
 
