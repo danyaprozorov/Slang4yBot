@@ -2,23 +2,27 @@ Hello
 Привет
 when u r welcome
 hey
-img0.jpg
+img0.gif
+0
 0
 Bye
 Пока
 when u r leave
 hey
-img1.jpg
+img1.gif
+0
 0
 Dog
 Собака
 home animalm
 animals
-img2.jpg
+img2.gif
+0
 0
 Car
 Машина
 somthing for driving
 transport
-img3.jpg
+img3.gif
+0
 0
