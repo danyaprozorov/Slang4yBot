@@ -24,10 +24,12 @@ class user:
         self.lear = lear
 
 class game:
-    def __init__(self, gnum, answer, mod):
+    def __init__(self, gnum, answer, mod, word, learned):
         self.gnum = gnum
         self.answer = answer
         self.mod = mod
+        self.word = word
+        self.learned = learned
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -41,17 +43,41 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def answer(call):
-    if call.data == game.answer:
+    if call.data == game.answer and game.answer != 'no':
         if game.mod == 3:
             game.mod = -1
         game.mod += 1
         bot.send_message(call.message.chat.id, 'Верно!')
-    else:
+        game.answer = 'no'
+        i = -1
+        while game.word != wordss[i].wrd:
+            i += 1
+            if game.word == wordss[i].wrd:
+                wordss[i].prog2 += 1
+                if wordss[i].prog2 >= 4:
+                    wordss[i].prog2 = 0
+                    wordss[i].prog = 2
+                    game.learned += 1
+    elif game.answer != 'no':
         bot.send_message(call.message.chat.id, 'Не правильно(')
         if game.mod == 3:
             game.mod = -1
         game.mod += 1
-
+        game.answer = 'no'
+    if game.gnum == 60:
+        learning.clear()
+        nikita.lear = 0
+        bot.send_message(call.message.chat.id, 'На этом все! В этот раз ты выучил ' + str(game.learned) + ' слов)')
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_back = types.KeyboardButton('Главное меню')
+        markup_reply.add(item_back)
+        bot.send_message(call.message.chat.id, 'Жми)', reply_markup=markup_reply)
+    else:
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_next = types.KeyboardButton('Продолжить')
+        item_back = types.KeyboardButton('Главное меню')
+        markup_reply.add(item_next, item_back)
+        bot.send_message(call.message.chat.id, 'Дальше?)', reply_markup=markup_reply)
 
 
 @bot.message_handler(content_types=['text'])
@@ -94,8 +120,18 @@ def get_text(message):
             bot.send_message(message.chat.id, 'Выбирай)', reply_markup=markup_reply)
     if message.text == 'Начать':
         game.gnum = 0
+        game.mod = 0
+        game.learned = 0
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_back = types.KeyboardButton('Главное меню')
+        markup_reply.add(item_back)
+        bot.send_message(message.chat.id, 'Выбирай)', reply_markup=markup_reply)
         gamek(message)
-    if message.text == 'Верно!' or message.text == 'Не правильно(':
+    if message.text == 'Продолжить':
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_back = types.KeyboardButton('Главное меню')
+        markup_reply.add(item_back)
+        bot.send_message(message.chat.id, 'Выбирай)', reply_markup=markup_reply)
         if game.mod == 0 or game.mod == 2:
             gamek(message)
         else:
@@ -103,7 +139,12 @@ def get_text(message):
 
 
 def gamek(message):
-    bot.send_photo(message.chat.id, open('./imgs/' + learning[numbrs[game.gnum] - 1].img, 'rb'))
+    if game.mod == 0:
+        bot.send_photo(message.chat.id, open('./imgs/' + learning[numbrs[game.gnum] - 1].img, 'rb'))
+        game.word = learning[numbrs[game.gnum] - 1].wrd
+    if game.mod == 2:
+        bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].trans)
+        game.word = learning[numbrs[game.gnum] - 1].wrd
     r = random.randint(1, 3)
     if r == 1:
         game.answer = 'a'
@@ -134,14 +175,24 @@ def gamek(message):
         game.gnum += 1
     markup_inline = types.InlineKeyboardMarkup()
     item_a = types.InlineKeyboardButton(text=a, callback_data='a')
+    markup_inline.add(item_a)
     item_b = types.InlineKeyboardButton(text=b, callback_data='b')
+    markup_inline.add(item_b)
     item_c = types.InlineKeyboardButton(text=с, callback_data='c')
-    markup_inline.add(item_a, item_b, item_c)
-    bot.send_message(message.chat.id, 'Какой вариант описывает картинку?', reply_markup=markup_inline)
+    markup_inline.add(item_c)
+    if game.mod == 0:
+        bot.send_message(message.chat.id, 'Какой вариант описывает картинку?', reply_markup=markup_inline)
+    if game.mod == 2:
+        bot.send_message(message.chat.id, 'Переведите слово', reply_markup=markup_inline)
 
 
 def gamer(message):
-    bot.send_message(message.chat.id, learning[numbrs[game.gun] - 1].wrd)
+    if game.mod == 1:
+        bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].wrd)
+        game.word = learning[numbrs[game.gnum] - 1].wrd
+    if game.mod == 3:
+        bot.send_message(message.chat.id, norus(learning[numbrs[game.gnum] - 1].diff))
+        game.word = learning[numbrs[game.gnum] - 1].wrd
     r = random.randint(1, 3)
     if r == 1:
         game.answer = 'a'
@@ -172,11 +223,15 @@ def gamer(message):
         game.gnum += 1
     markup_inline = types.InlineKeyboardMarkup()
     item_a = types.InlineKeyboardButton(text=a, callback_data='a')
+    markup_inline.add(item_a)
     item_b = types.InlineKeyboardButton(text=b, callback_data='b')
+    markup_inline.add(item_b)
     item_c = types.InlineKeyboardButton(text=с, callback_data='c')
-    markup_inline.add(item_a, item_b, item_c)
-    bot.send_message(message.chat.id, 'Переведите слово', reply_markup=markup_inline)
-
+    markup_inline.add(item_c)
+    if game.mod == 1:
+        bot.send_message(message.chat.id, 'Переведите слово', reply_markup=markup_inline)
+    if game.mod == 3:
+        bot.send_message(message.chat.id, 'О чем идет речь?', reply_markup=markup_inline)
 
 def learni(message):
     i = 0
@@ -189,6 +244,7 @@ def learni(message):
         if j == 5:
             break
     if j < 5:
+        learning.clear()
         bot.send_message(message.chat.id, 'Нужно выбрать как минимум 5 слова для изучения')
         learn(message)
     else:
@@ -272,6 +328,24 @@ def main_menu(message):
     item_topic = types.KeyboardButton('Выбор топика')
     markup_reply.add(item_progress, item_choice, item_learn, item_topic)
     bot.send_message(message.chat.id, 'Жми на кнопку)', reply_markup=markup_reply)
+
+
+def norus(t):
+    alphabet = ('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя')
+    lst = list(t)
+    i = 0
+    t = 0
+    while i < len(lst):
+        if t == 0:
+            i += 1
+        if lst[i] in alphabet:
+            t = 1
+        if t == 1:
+            lst.pop(i)
+    lst = "".join(lst)
+    return [str(lst)]
+
+
 learning = []
 wordss = []
 numbrs = []
@@ -298,5 +372,5 @@ while i < 60:
     numbrs[i] = int(numbrs[i])
     i += 1
 nikita = user(0, 0, 0 )
-game = game(0, 'no', 0)
+game = game(0, 'no', 0, 'no' , 0)
 bot.polling(none_stop=True)
