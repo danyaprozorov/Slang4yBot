@@ -24,9 +24,10 @@ class user:
         self.lear = lear
 
 class game:
-    def __init__(self, gnum, answer):
+    def __init__(self, gnum, answer, mod):
         self.gnum = gnum
         self.answer = answer
+        self.mod = mod
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -41,9 +42,15 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def answer(call):
     if call.data == game.answer:
+        if game.mod == 3:
+            game.mod = -1
+        game.mod += 1
         bot.send_message(call.message.chat.id, 'Верно!')
     else:
         bot.send_message(call.message.chat.id, 'Не правильно(')
+        if game.mod == 3:
+            game.mod = -1
+        game.mod += 1
 
 
 
@@ -88,10 +95,16 @@ def get_text(message):
     if message.text == 'Начать':
         game.gnum = 0
         gamek(message)
+    if message.text == 'Верно!' or message.text == 'Не правильно(':
+        if game.mod == 0 or game.mod == 2:
+            gamek(message)
+        else:
+            gamer(message)
+
 
 def gamek(message):
-    bot.send_photo(message.chat.id, open(learning[game.gnum].img, 'rb'))
-    r = random.randint(1,3)
+    bot.send_photo(message.chat.id, open('./imgs/' + learning[numbrs[game.gnum] - 1].img, 'rb'))
+    r = random.randint(1, 3)
     if r == 1:
         game.answer = 'a'
         r = learning[numbrs[game.gnum] - 1].wrd
@@ -127,11 +140,48 @@ def gamek(message):
     bot.send_message(message.chat.id, 'Какой вариант описывает картинку?', reply_markup=markup_inline)
 
 
+def gamer(message):
+    bot.send_message(message.chat.id, learning[numbrs[game.gun] - 1].wrd)
+    r = random.randint(1, 3)
+    if r == 1:
+        game.answer = 'a'
+        r = learning[numbrs[game.gnum] - 1].trans
+        a = r
+        game.gnum += 1
+        b = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+        с = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+    elif r == 2:
+        game.answer = 'b'
+        r = learning[numbrs[game.gnum] - 1].trans
+        b = r
+        game.gnum += 1
+        a = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+        с = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+    elif r == 3:
+        game.answer = 'c'
+        r = learning[numbrs[game.gnum] - 1].trans
+        с = r
+        game.gnum += 1
+        a = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+        b = learning[numbrs[game.gnum] - 1].trans
+        game.gnum += 1
+    markup_inline = types.InlineKeyboardMarkup()
+    item_a = types.InlineKeyboardButton(text=a, callback_data='a')
+    item_b = types.InlineKeyboardButton(text=b, callback_data='b')
+    item_c = types.InlineKeyboardButton(text=с, callback_data='c')
+    markup_inline.add(item_a, item_b, item_c)
+    bot.send_message(message.chat.id, 'Переведите слово', reply_markup=markup_inline)
+
 
 def learni(message):
     i = 0
     j = 0
-    while i < 15:
+    while i < 45:
         if wordss[i].prog == 1:
             learning.append(wordss[i])
             j += 1
@@ -146,20 +196,20 @@ def learni(message):
         rep(message)
 
 def rep(message):
-    bot.send_photo(message.chat.id, open(learning[nikita.lear].img, 'rb'))
-    bot.send_message(message.chat.id, learning[nikita.lear].wrd + ' - ' + wordss[nikita.choic].trans)
+    bot.send_photo(message.chat.id, open('./imgs/' + learning[nikita.lear].img, 'rb'))
+    bot.send_message(message.chat.id, learning[nikita.lear].wrd + ' - ' + learning[nikita.lear].trans)
     bot.send_message(message.chat.id, learning[nikita.lear].diff)
     markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item_next = types.KeyboardButton('Следущие')
     item_back = types.KeyboardButton('Главное меню')
     markup_reply.add(item_next, item_back)
-    bot.send_message(message.chat.id, 'Выбирай)', reply_markup=markup_reply)
+    bot.send_message(message.chat.id, 'Запоминай)', reply_markup=markup_reply)
 
 
 def learnwords(message):
     i = 0
     j = 1
-    while i < 15:
+    while i < 45:
         if wordss[i].prog == 1:
             bot.send_message(message.chat.id, str(j) + '. ' + wordss[i].wrd + ' [' + str(wordss[i].prog2) + '/4]')
             j += 1
@@ -190,7 +240,7 @@ def learn(message):
 def choice(message):
     try:
         if wordss[nikita.choic].prog == 0:
-            bot.send_photo(message.chat.id, open(wordss[nikita.choic].img, 'rb'))
+            bot.send_photo(message.chat.id, open('./imgs/' + wordss[nikita.choic].img, 'rb'))
             bot.send_message(message.chat.id, wordss[nikita.choic].wrd + ' - ' + wordss[nikita.choic].trans)
             bot.send_message(message.chat.id, wordss[nikita.choic].diff)
             markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -202,7 +252,7 @@ def choice(message):
             bot.send_message(message.chat.id, 'Жми на кнопку)', reply_markup=markup_reply)
         else:
             nikita.choic += 1
-            if nikita.choic >= 15:
+            if nikita.choic >= 45:
                 nikita.choic = 0
                 choice(message)
             else:
@@ -227,13 +277,13 @@ wordss = []
 numbrs = []
 i = 0
 f = open("words1.txt", "r", encoding='utf-8')
-while i < 105:
+while i < 315:
     wordss.append(Words(f.readline().strip(), f.readline().strip(), f.readline().strip(), f.readline().strip(),
                         f.readline().strip(), f.readline(), f.readline()))
     i += 1
 f.close()
 i = 0
-while i < 15:
+while i < 45:
     wordss[i].prog = int(wordss[i].prog)
     wordss[i].prog2 = int(wordss[i].prog2)
     i += 1
@@ -248,5 +298,5 @@ while i < 60:
     numbrs[i] = int(numbrs[i])
     i += 1
 nikita = user(0, 0, 0 )
-game = game(0, 'no')
+game = game(0, 'no', 0)
 bot.polling(none_stop=True)
