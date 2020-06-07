@@ -54,6 +54,8 @@ def answer(call):
             i += 1
             if game.word == wordss[i].wrd:
                 wordss[i].prog2 += 1
+                if wordss[i].prog == 0:
+                    wordss[i].prog = 1
                 if wordss[i].prog2 >= 4:
                     wordss[i].prog2 = 0
                     wordss[i].prog = 2
@@ -136,6 +138,49 @@ def get_text(message):
             gamek(message)
         else:
             gamer(message)
+    if message.text == 'Выбор топика':
+        topicchoice(message)
+    if message.text == 'Daily' or message.text == 'Relevant' or message.text == 'Fcking slang':
+        topiccheck(message)
+
+
+def topicchoice(message):
+    bot.send_message(message.chat.id, '1. Daily')
+    bot.send_message(message.chat.id, '2. Relevant')
+    bot.send_message(message.chat.id, '3. Fcking slang')
+    markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item_progress = types.KeyboardButton('Daily')
+    item_choice = types.KeyboardButton('Relevant')
+    item_learn = types.KeyboardButton('Fcking slang')
+    item_back = types.KeyboardButton('Главное меню')
+    markup_reply.add(item_progress, item_choice, item_learn, item_back)
+    bot.send_message(message.chat.id, 'Выбирай тему)', reply_markup=markup_reply)
+
+
+def topiccheck(message):
+    topic = message.text.lower()
+    i = 0
+    learning.clear()
+    j = 0
+    while i < 45:
+        if wordss[i].prog != 2 and wordss[i].topic == topic:
+            learning.append(wordss[i])
+            j += 1
+        i += 1
+        if j == 5:
+            break
+    if j < 5 and j != 0:
+        learning.clear()
+        bot.send_message(message.chat.id, 'В этом топике соталось слишком мало слов, найдите их в выборе слов')
+        topicchoice()
+    elif j == 0:
+        bot.send_message(message.chat.id, 'Ты знаешь все слова из этого топика)')
+        topicchoice(message)
+    else:
+        bot.send_message(message.chat.id, 'Давай повторим слова')
+        rep(message)
+
+
 
 
 def gamek(message):
@@ -235,6 +280,7 @@ def gamer(message):
 
 def learni(message):
     i = 0
+    learning.clear()
     j = 0
     while i < 45:
         if wordss[i].prog == 1:
