@@ -2,6 +2,7 @@ import telebot
 import cfg
 import random
 from telebot import types
+import datetime
 
 bot = telebot.TeleBot(cfg.TOKEN)
 
@@ -18,10 +19,11 @@ class Words(object):
 
 
 class user:
-    def __init__(self, id, choic, lear):
+    def __init__(self, id, choic, lear, inproc):
         self.id = id
         self.choic = choic
         self.lear = lear
+        self.inproc = inproc
 
 class game:
     def __init__(self, gnum, answer, mod, word, learned):
@@ -30,6 +32,13 @@ class game:
         self.mod = mod
         self.word = word
         self.learned = learned
+
+class date:
+    def __init__(self, day, month, today, max):
+        self.day = day
+        self.month = month
+        self.today = today
+        self.max = max
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -60,6 +69,7 @@ def answer(call):
                     wordss[i].prog2 = 0
                     wordss[i].prog = 2
                     game.learned += 1
+                    time()
     elif game.answer != 'no':
         bot.send_message(call.message.chat.id, 'Не правильно(')
         if game.mod == 3:
@@ -101,6 +111,7 @@ def get_text(message):
         choice(message)
     if message.text == 'Я знаю это слово':
         wordss[nikita.choic].prog = 2
+        time()
         nikita.choic += 1
         choice(message)
     if message.text == 'Учить слова':
@@ -114,6 +125,7 @@ def get_text(message):
         if nikita.lear < 5:
             rep(message)
         else:
+            nikita.lear = 0
             bot.send_message(message.chat.id, 'Ты готов начать?')
             markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item_startt = types.KeyboardButton('Начать')
@@ -142,6 +154,40 @@ def get_text(message):
         topicchoice(message)
     if message.text == 'Daily' or message.text == 'Relevant' or message.text == 'Fcking slang':
         topiccheck(message)
+    if message.text == 'Мой прогресс':
+        progress(message)
+
+
+def progress(message):
+    time2()
+    bot.send_message(message.chat.id, 'Словарный запас: ' + wordbase())
+    bot.send_message(message.chat.id, 'Наибольшее количество новых слов за день: ' + str(date.max))
+    bot.send_message(message.chat.id, 'Сегодня слов выучено: ' + str(date.today))
+    bot.send_message(message.chat.id, 'В процессе изучения: ' + inlearning())
+    markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item_back = types.KeyboardButton('Главное меню')
+    markup_reply.add(item_back)
+    bot.send_message(message.chat.id, 'Ничиго себе результаты))', reply_markup=markup_reply)
+
+
+def wordbase():
+    i = 0
+    j = 0
+    while i < 45:
+        if wordss[i].prog == 2:
+            j += 1
+        i += 1
+    return str(j)
+
+
+def inlearning():
+    i = 0
+    j = 0
+    while i < 45:
+        if wordss[i].prog2 > 0 and wordss[i].prog == 1:
+            j += 1
+        i += 1
+    return str(j)
 
 
 def topicchoice(message):
@@ -297,6 +343,7 @@ def learni(message):
         bot.send_message(message.chat.id, 'Давай повторим слова')
         rep(message)
 
+
 def rep(message):
     bot.send_photo(message.chat.id, open('./imgs/' + learning[nikita.lear].img, 'rb'))
     bot.send_message(message.chat.id, learning[nikita.lear].wrd + ' - ' + learning[nikita.lear].trans)
@@ -321,6 +368,7 @@ def learnwords(message):
         main_menu(message)
     else:
         have(message)
+
 
 def have(message):
     markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -392,6 +440,43 @@ def norus(t):
     return [str(lst)]
 
 
+def time():
+    x = datetime.datetime.now()
+    if date.day == x.day and date.month == x.month:
+        date.today += 1;
+    else:
+        if date.max < date.today:
+            date.max = date.today
+        date.today = 1
+    date.day = x.day
+    date.month = x.month
+
+
+def time2():
+    x = datetime.datetime.now()
+    if date.day != x.day or date.month != x.month:
+        if date.max < date.today:
+            date.max = date.today
+        date.today = 0
+    date.day = x.day
+    date.month = x.month
+
+
+#def saves():
+#    save = []
+#    i = 0
+#    while i < len(wordss):
+#        save.append(str(wordss[i].name + '\n'))
+#        save.append(str(wordss[i].num + '\n'))
+#        i += 1
+#    f = open("words1".txt", "w")
+#    f.writelines(save)
+#    f.close
+#    f = open("words1.txt.txt", "r")
+#    f.close
+
+
+
 learning = []
 wordss = []
 numbrs = []
@@ -417,6 +502,7 @@ i = 0
 while i < 60:
     numbrs[i] = int(numbrs[i])
     i += 1
-nikita = user(0, 0, 0 )
+nikita = user(0, 0, 0, 0)
 game = game(0, 'no', 0, 'no' , 0)
+date = date(0, 0, 0, 0)
 bot.polling(none_stop=True)
