@@ -91,9 +91,9 @@ def answer(call):
         markup_reply.add(item_next, item_back)
         bot.send_message(call.message.chat.id, 'Дальше?)', reply_markup=markup_reply)
 
-
 @bot.message_handler(content_types=['text'])
 def get_text(message):
+    saves()
     if message.text == 'Hello':
         bot.send_message(message.chat.id, f'Рад видеть тебя, {message.from_user.first_name}')
         bot.send_message(message.chat.id, 'Снизу меню, с чего начнем?')
@@ -227,15 +227,17 @@ def topiccheck(message):
         rep(message)
 
 
-
-
 def gamek(message):
-    if game.mod == 0:
-        bot.send_photo(message.chat.id, open('./imgs/' + learning[numbrs[game.gnum] - 1].img, 'rb'))
-        game.word = learning[numbrs[game.gnum] - 1].wrd
-    if game.mod == 2:
-        bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].trans)
-        game.word = learning[numbrs[game.gnum] - 1].wrd
+    try:
+        if game.mod == 0:
+            bot.send_photo(message.chat.id, open('./imgs/' + learning[numbrs[game.gnum] - 1].img, 'rb'))
+            game.word = learning[numbrs[game.gnum] - 1].wrd
+        if game.mod == 2:
+            bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].trans)
+            game.word = learning[numbrs[game.gnum] - 1].wrd
+    except BaseException:
+        bot.send_message(message.chat.id, 'Произошла ошибка, перезайди')
+        main_menu(message)
     r = random.randint(1, 3)
     if r == 1:
         game.answer = 'a'
@@ -278,12 +280,16 @@ def gamek(message):
 
 
 def gamer(message):
-    if game.mod == 1:
-        bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].wrd)
-        game.word = learning[numbrs[game.gnum] - 1].wrd
-    if game.mod == 3:
-        bot.send_message(message.chat.id, norus(learning[numbrs[game.gnum] - 1].diff))
-        game.word = learning[numbrs[game.gnum] - 1].wrd
+    try:
+        if game.mod == 1:
+            bot.send_message(message.chat.id, learning[numbrs[game.gnum] - 1].wrd)
+            game.word = learning[numbrs[game.gnum] - 1].wrd
+        if game.mod == 3:
+            bot.send_message(message.chat.id, norus(learning[numbrs[game.gnum] - 1].diff))
+            game.word = learning[numbrs[game.gnum] - 1].wrd
+    except BaseException:
+        bot.send_message(message.chat.id, 'Произошла ошибка, перезайди')
+        main_menu(message)
     r = random.randint(1, 3)
     if r == 1:
         game.answer = 'a'
@@ -323,6 +329,7 @@ def gamer(message):
         bot.send_message(message.chat.id, 'Переведите слово', reply_markup=markup_inline)
     if game.mod == 3:
         bot.send_message(message.chat.id, 'О чем идет речь?', reply_markup=markup_inline)
+
 
 def learni(message):
     i = 0
@@ -450,6 +457,7 @@ def time():
         date.today = 1
     date.day = x.day
     date.month = x.month
+    saves()
 
 
 def time2():
@@ -460,21 +468,36 @@ def time2():
         date.today = 0
     date.day = x.day
     date.month = x.month
+    saves()
 
 
-#def saves():
-#    save = []
-#    i = 0
-#    while i < len(wordss):
-#        save.append(str(wordss[i].name + '\n'))
-#        save.append(str(wordss[i].num + '\n'))
-#        i += 1
-#    f = open("words1".txt", "w")
-#    f.writelines(save)
-#    f.close
-#    f = open("words1.txt.txt", "r")
-#    f.close
-
+def saves():
+    save = []
+    save1 = []
+    save1.append(str(date.day) + '\n')
+    save1.append(str(date.month) + '\n')
+    save1.append(str(date.today) + '\n')
+    save1.append(str(date.max) + '\n')
+    i = 0
+    while i < len(wordss):
+        save.append(str(wordss[i].wrd) + '\n')
+        save.append(str(wordss[i].trans) + '\n')
+        save.append(str(wordss[i].diff) + '\n')
+        save.append(str(wordss[i].topic) + '\n')
+        save.append(str(wordss[i].img) + '\n')
+        save.append(str(wordss[i].prog) + '\n')
+        save.append(str(wordss[i].prog2) + '\n')
+        i += 1
+    m = open("date.txt", "w", encoding='utf-8')
+    m.writelines(save1)
+    m.close
+    m = open("date.txt", "r", encoding='utf-8')
+    m.close
+    f = open("words1.txt", "w", encoding='utf-8')
+    f.writelines(save)
+    f.close
+    f = open("words1.txt", "r", encoding='utf-8')
+    f.close
 
 
 learning = []
@@ -502,7 +525,14 @@ i = 0
 while i < 60:
     numbrs[i] = int(numbrs[i])
     i += 1
+i = 0
+f = open("date.txt", "r", encoding='utf-8')
+date = date(f.readline(), f.readline(), f.readline(), f.readline())
+f.close()
+date.day = int(date.day)
+date.month = int(date.month)
+date.today = int(date.today)
+date.max = int(date.month)
 nikita = user(0, 0, 0, 0)
-game = game(0, 'no', 0, 'no' , 0)
-date = date(0, 0, 0, 0)
+game = game(0, 'no', 0, 'no', 0)
 bot.polling(none_stop=True)
